@@ -7,8 +7,8 @@ To do this - you can find information here: http://osxdaily.com/2011/09/29/start
 
 To use the program run from Terminal. 
 
-USERNAME: Insert Local User Name
-HOST: Enter 'localhost'
-PORT: 21
-WORDLIST: any .txt file 
+* USERNAME: Insert Local User Name
+* HOST: Enter 'localhost'
+* PORT: 21
+* WORDLIST: any .txt file 
 
