@@ -90,10 +90,10 @@ module Net
 
     def open_socket(host, port)
       if defined? SOCKSsocket and ENV["SOCKS_SERVER"]
-	@passive = true
-	return SOCKSsocket.open(host, port)
+	   @passive = true
+	   return SOCKSsocket.open(host, port)
       else
-	return TCPSocket.open(host, port)
+	     return TCPSocket.open(host, port)
       end
     end
     private :open_socket
@@ -106,18 +106,18 @@ module Net
 
     def connect(host, port = FTP_PORT)
       if @debug_mode
-	print "connect: ", host, ", ", port, "\n"
+	     print "connect: ", host, ", ", port, "\n"
       end
       synchronize do
-	@sock = open_socket(host, port)
-	voidresp
+	    @sock = open_socket(host, port)
+	    voidresp
       end
     end
 
 
     def putline(line)
       if @debug_mode
-	print "put: ", sanitize(line), "\n"
+	      print "put: ", sanitize(line), "\n"
       end
       line = line + CRLF
       @sock.write(line)
@@ -125,35 +125,32 @@ module Net
     private :putline
 
     def getline
-          begin
-            line = @sock.readline # if get EOF, raise EOFError
-          rescue EOFError
-            raise FTPProtoError, "Connection closed unexpectedly"
-          end
-          line.sub!(/(\r\n|\n|\r)\z/n, "")
-          if @debug_mode
-            print "get: ", sanitize(line), "\n"
-          end
-          return line
-        end
-        private :getline
+      begin
+        line = @sock.readline # if get EOF, raise EOFError
+      rescue EOFError
+        raise FTPProtoError, "Connection closed unexpectedly"
+      end
+      line.sub!(/(\r\n|\n|\r)\z/n, "")
+      if @debug_mode
+        print "get: ", sanitize(line), "\n"
+      end
+      return line
+    end
+    private :getline
 
     def getmultiline
       line = getline
       buff = line
       if line[3] == ?-
-	  code = line[0, 3]
-	begin
-	  line = getline
-	  buff << "\n" << line
-	end until line[0, 3] == code and line[3] != ?-
-      end
+        code = line[0, 3]
+      begin
+      line = getline
+        buff << "\n" << line
+      end until line[0, 3] == code and line[3] != ?-
+        end
       return buff << "\n"
     end
     private :getmultiline
-
-
-
 
     def getresp
       @last_response = getmultiline
@@ -193,7 +190,7 @@ module Net
     # Sends a command and returns the response.
     def sendcmd(cmd)
       synchronize do
-	   putline(cmd)
+	    putline(cmd)
 	     return getresp
       end
     end
@@ -202,8 +199,8 @@ module Net
     # Sends a command and expect a response beginning with '2'.
     def voidcmd(cmd)
       synchronize do
-	putline(cmd)
-	voidresp
+	      putline(cmd)
+	      voidresp
       end
     end
 
@@ -228,14 +225,14 @@ module Net
 
     def chdir(dirname)
       if dirname == ".."
-	begin
-	  voidcmd("CDUP")
-	  return
-	rescue FTPPermError
-	  if $![0, 3] != "500"
+	    begin
+	      voidcmd("CDUP")
+	      return
+	      rescue FTPPermError
+	    if $![0, 3] != "500"
 	    raise FTPPermError, $!
-	  end
-	end
+	   end
+	   end
       end
       cmd = "CWD " + dirname
       voidcmd(cmd)
