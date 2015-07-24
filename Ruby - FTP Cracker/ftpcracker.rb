@@ -6,19 +6,19 @@ module Net
 
   class FTPError < StandardError; end
   class FTPReplyError < FTPError; end
-  class FTPTempError < FTPError; end 
-  class FTPPermError < FTPError; end 
+  class FTPTempError < FTPError; end
+  class FTPPermError < FTPError; end
   class FTPProtoError < FTPError; end
- 
+
   class FTP
     include MonitorMixin
-    
+
     # :stopdoc:
     FTP_PORT = 21
     CRLF = "\r\n"
     DEFAULT_BLOCKSIZE = 4096
     # :startdoc:
-    
+
     # When +true+, transfers are performed in binary mode.  Default: +true+.
     attr_accessor :binary
 
@@ -42,7 +42,7 @@ module Net
 
     # The server's last response.
     attr_reader :last_response
-    
+
     #
     # A synonym for <tt>FTP.new</tt>, but with a mandatory host parameter.
     #
@@ -61,7 +61,7 @@ module Net
         new(host, user, passwd, acct)
       end
     end
-    
+
     #
     # Creates and returns a new +FTP+ object. If a +host+ is given, a connection
     # is made. Additionally, if the +user+ is given, the given user name,
@@ -74,15 +74,15 @@ module Net
       @debug_mode = false
       @resume = false
       if host
-	connect(host)
-	if user
-	  login(user, passwd, acct)
-	end
+	     connect(host)
+	   if user
+	     login(user, passwd, acct)
+	       end
       end
     end
 
-  
-   
+
+
     # Obsolete
     def return_code=(s)
       $stderr.puts("warning: Net::FTP#return_code= is obsolete and do nothing")
@@ -97,13 +97,13 @@ module Net
       end
     end
     private :open_socket
-    
-    
+
+
     # Establishes an FTP connection to host, optionally overriding the default
     # port. If the environment variable +SOCKS_SERVER+ is set, sets up the
     # connection through a SOCKS proxy. Raises an exception (typically
     # <tt>Errno::ECONNREFUSED</tt>) if the connection cannot be established.
-    
+
     def connect(host, port = FTP_PORT)
       if @debug_mode
 	print "connect: ", host, ", ", port, "\n"
@@ -113,8 +113,8 @@ module Net
 	voidresp
       end
     end
-    
-    
+
+
     def putline(line)
       if @debug_mode
 	print "put: ", sanitize(line), "\n"
@@ -123,7 +123,7 @@ module Net
       @sock.write(line)
     end
     private :putline
-    
+
     def getline
           begin
             line = @sock.readline # if get EOF, raise EOFError
@@ -137,7 +137,7 @@ module Net
           return line
         end
         private :getline
-    
+
     def getmultiline
       line = getline
       buff = line
@@ -151,54 +151,54 @@ module Net
       return buff << "\n"
     end
     private :getmultiline
-    
+
+
+
+
     def getresp
       @last_response = getmultiline
       @last_response_code = @last_response[0..5]
-     
-      
+      puts @last_response
+
       if @last_response[0..2] == "230"
         puts "PASSWORD FOUND"
         exit
-      end 
-  
+      end
       case @last_response_code
       when /\A1/
-	return @last_response 
+	      return @last_response
       when /\A2/
-  return @last_response 
+        return @last_response
       when /\A3/
-  return @last_response 
+        return @last_response
       when /\A4/
       when /\A5/
-        puts "530 Login Incorrect: PASSWORD NOT FOUND"
-  
       else
-	raise FTPProtoError, @last_response
+	     raise FTPProtoError, @last_response
       end
     end
-    
+
     private :getresp
-    
-    
+
+
     def voidresp
       resp = getresp
       if resp[0] != ?2
-	raise FTPReplyError, resp
+	     raise FTPReplyError, resp
       end
     end
     private :voidresp
-    
-    
+
+
     # Sends a command and returns the response.
     def sendcmd(cmd)
       synchronize do
-	putline(cmd)
-	return getresp
+	   putline(cmd)
+	     return getresp
       end
     end
-    
-    
+
+
     # Sends a command and expect a response beginning with '2'.
     def voidcmd(cmd)
       synchronize do
@@ -206,26 +206,26 @@ module Net
 	voidresp
       end
     end
-    
-  
-    # Logs in to the remote host. 
+
+
+    # Logs in to the remote host.
     def login(user = "anonymous", passwd = nil, acct = nil)
       if user == "anonymous" and passwd == nil
         passwd = getaddress
       end
-      
+
       resp = ""
       synchronize do
 	      resp = sendcmd('USER ' + user)
 	      if resp[0] == ?3
-	        resp = sendcmd('PASS ' + passwd)   
+	        resp = sendcmd('PASS ' + passwd)
         end
       end
-      
+
       @welcome = resp
-      
+
     end
-    
+
     def chdir(dirname)
       if dirname == ".."
 	begin
@@ -240,24 +240,24 @@ module Net
       cmd = "CWD " + dirname
       voidcmd(cmd)
     end
-    
+
     # Creates a remote directory.
     def mkdir(dirname)
       resp = sendcmd("MKD " + dirname)
       return parse257(resp)
     end
-    
-    
+
+
     # Removes a remote directory.
     def rmdir(dirname)
       voidcmd("RMD " + dirname)
     end
-    
+
 
     def quit
       voidcmd("QUIT")
     end
-  
+
     # Closes the connection.  Further operations are impossible until you open
     # a new connection with #connect.
     def close
@@ -265,48 +265,3 @@ module Net
     end
   end
 end
-
-
-#Here is the program I wrote: 
-
-puts "Please enter a user name?"
-user_name = gets.chomp.to_s
-
-
-puts "Please enter a host: "
-ip_address = gets.chomp.to_s
-
-puts "Please enter a port: "
-port = gets.chomp.to_i
-
-puts "\n"
-
-puts "USER NAME: #{user_name}"
-puts "IP ADDRESS: #{ip_address}"
-puts "PORT: #{port}"
-puts "\n"
-
-
-puts "Please enter a text file: "
-password = gets.chomp.to_s
-
-File.open(password).each do |line|
-  ftp=Net::FTP.new
-  ftp.connect(ip_address, port)
-  puts "Trying Username: #{user_name} Password: #{line}"
-  ftp.login(user_name,line)
-   
-end
-
-
-
-  
-
-
-
-
-
-
-
-        
-        

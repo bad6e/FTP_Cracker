@@ -1,4 +1,4 @@
-require './ftphacker'
+require './ftpcracker'
 
 
 puts "Please enter a user name?"
@@ -27,5 +27,4 @@ File.open(password).each do |line|
   ftp.connect(ip_address, port)
   puts "Trying Username: #{user_name} Password: #{line}"
   ftp.login(user_name,line)
-   
 end
